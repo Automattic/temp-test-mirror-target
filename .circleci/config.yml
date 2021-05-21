@@ -6,7 +6,7 @@ orbs:
 
 references:
   desktop_defaults: &desktop_defaults
-    working_directory: ~/WordPress-Desktop
+    working_directory: ~/temp-test-mirror-target
 
   yarn-install: &yarn-install
     name: Install dependencies
@@ -90,7 +90,7 @@ jobs:
                 command: cd bin && node validate_tag.js $VERSION
       - run: *desktop-decrypt-assets
       - persist_to_workspace:
-          root: /home/circleci/WordPress-Desktop
+          root: /home/circleci/temp-test-mirror-target
           paths: *desktop-cache-paths
       - slack/status: *desktop-notify-slack-failure
 
@@ -98,11 +98,11 @@ jobs:
     macos:
       xcode: '12.3.0'
     shell: /bin/bash --login
-    working_directory: /Users/distiller/WordPress-Desktop
+    working_directory: /Users/distiller/temp-test-mirror-target
     steps:
       - checkout
       - attach_workspace:
-          at: /Users/distiller/WordPress-Desktop
+          at: /Users/distiller/temp-test-mirror-target
       - run: *update-node
       - run: *desktop-install-app-deps
       - run:
@@ -146,7 +146,7 @@ jobs:
           when: always
           path: e2e/screenshots
       - persist_to_workspace:
-          root: ~/WordPress-Desktop
+          root: ~/temp-test-mirror-target
           paths:
             - release
       - slack/status: *desktop-notify-slack-failure
@@ -159,7 +159,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/WordPress-Desktop
+          at: ~/temp-test-mirror-target
       - run: *update-node
       - run:
           name: Install Linux deps
@@ -203,19 +203,19 @@ jobs:
           when: always
           path: e2e/screenshots
       - persist_to_workspace:
-          root: ~/WordPress-Desktop
+          root: ~/temp-test-mirror-target
           paths:
             - release
 
   wp-desktop-windows:
     executor:
       name: win/default
-    working_directory: C:\Users\circleci\WordPress-Desktop
+    working_directory: C:\Users\circleci\temp-test-mirror-target
     environment:
     steps:
       - checkout
       - attach_workspace:
-          at: C:\Users\circleci\WordPress-Desktop
+          at: C:\Users\circleci\temp-test-mirror-target
       - run:
           name: Install Node Version
           command: |
@@ -239,7 +239,7 @@ jobs:
             #
             # Fix: Import .p12 into the local certificate store. Sign Tool will use
             # package.json's `certificateSubjectName` to find the imported cert.
-            $env:CSC_LINK='C:\Users\circleci\WordPress-Desktop\resource\certificates\win.p12'
+            $env:CSC_LINK='C:\Users\circleci\temp-test-mirror-target\resource\certificates\win.p12'
             Import-PfxCertificate -FilePath $env:CSC_LINK -CertStoreLocation Cert:\LocalMachine\Root -Password (ConvertTo-SecureString -String $env:WIN_CSC_KEY_PASSWORD -AsPlainText -Force)
       - run:
           name: Build Desktop Windows
@@ -266,7 +266,7 @@ jobs:
           when: always
           path: release
       - persist_to_workspace:
-          root: C:\Users\circleci\WordPress-Desktop
+          root: C:\Users\circleci\temp-test-mirror-target
           paths:
             - release
 
@@ -275,13 +275,13 @@ jobs:
   wp-desktop-publish:
     docker:
       - image: circleci/golang:1.12
-    working_directory: /home/circleci/WordPress-Desktop
+    working_directory: /home/circleci/temp-test-mirror-target
     environment:
       VERSION: << pipeline.git.tag >>
     steps:
       - checkout
       - attach_workspace:
-          at: /home/circleci/WordPress-Desktop
+          at: /home/circleci/temp-test-mirror-target
       - run:
           name: Install Dependencies
           command: go get github.com/tcnksm/ghr
@@ -310,30 +310,30 @@ jobs:
 workflows:
   version: 2
   wp-desktop-release:
-    when: << pipeline.git.tag >>
+    # when: << pipeline.git.tag >>
     jobs:
-      - wp-desktop-assets:
-          filters:
-            tags:
-              only: /v.*/
+      - wp-desktop-assets
+          # filters:
+          #   tags:
+          #     only: /v.*/
       - wp-desktop-mac:
           requires:
             - wp-desktop-assets
-          filters:
-            tags:
-              only: /v.*/
+          # filters:
+          #   tags:
+          #     only: /v.*/
       - wp-desktop-linux:
           requires:
             - wp-desktop-assets
-          filters:
-            tags:
-              only: /v.*/
+          # filters:
+          #   tags:
+          #     only: /v.*/
       - wp-desktop-windows:
           requires:
             - wp-desktop-assets
-          filters:
-            tags:
-              only: /v.*/
+          # filters:
+          #   tags:
+          #     only: /v.*/
       - wp-desktop-publish:
           requires:
             - wp-desktop-mac
