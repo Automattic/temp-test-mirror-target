@@ -290,8 +290,8 @@ jobs:
       - run:
           name: Publish Github Release
           command: |
-            echo "Publishing draft release for wp-desktop $VERSION..."
-            NAME="WP-Desktop ${VERSION#?}"
+            echo "Publishing draft release for wp-desktop 1.2.3..."
+            NAME="WP-Desktop 1.2.3"
 
             chmod +x bin/make-changelog.sh
             ./bin/make-changelog.sh > CHANGELOG.md
@@ -305,7 +305,7 @@ jobs:
               --body "$(cat CHANGELOG.md)" \
               --delete \
               --draft \
-              "${VERSION}" release/
+              "1.2.3" release/
 
             echo "Publish complete"
 
