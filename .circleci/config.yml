@@ -72,16 +72,18 @@ references:
 jobs:
   # TODO: Make this local to the Win, Linux and Mac jobs
   wp-desktop-assets:
-    machine:
-      image: ubuntu-1604:202004-01
-    resource_class: medium
+    docker:
+      - image: circleci/node:12.16.2-browsers
     <<: *desktop_defaults
     environment:
-      NVM_DIR: '/opt/circleci/.nvm'
       VERSION: << pipeline.git.tag >>
       CONFIG_ENV: release
+    working_directory: ~/temp-test-mirror-target
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/temp-test-mirror-target
+      - run: *update-node
       - when:
           condition: << pipeline.git.tag >>
           steps:
@@ -90,7 +92,7 @@ jobs:
                 command: cd bin && node validate_tag.js $VERSION
       - run: *desktop-decrypt-assets
       - persist_to_workspace:
-          root: /home/circleci/temp-test-mirror-target
+          root: ~/temp-test-mirror-target
           paths: *desktop-cache-paths
       - slack/status: *desktop-notify-slack-failure
 
@@ -292,7 +294,7 @@ jobs:
             NAME="WP-Desktop ${VERSION#?}"
 
             chmod +x bin/make-changelog.sh
-            ./bin/make-changelog.sh > desktop/CHANGELOG.md
+            ./bin/make-changelog.sh > CHANGELOG.md
 
             ghr \
               --token "${GH_TOKEN}" \
