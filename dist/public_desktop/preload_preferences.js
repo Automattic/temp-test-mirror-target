@@ -1,1 +1,0 @@
-const{ipcRenderer,contextBridge}=require("electron");(async()=>{const e=await ipcRenderer.invoke("get-settings");contextBridge.exposeInMainWorld("electron",{send:(e,n)=>{e.startsWith("preferences-changed")&&ipcRenderer.send(e,n)},preferences:e})})();

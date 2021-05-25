@@ -1,1 +1,0 @@
-const{ipcRenderer,contextBridge}=require("electron");(async()=>{const e=await ipcRenderer.invoke("get-config");contextBridge.exposeInMainWorld("electron",{config:e})})();
